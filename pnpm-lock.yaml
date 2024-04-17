@@ -8,9 +8,6 @@ dependencies:
   '@imgly/background-removal':
     specifier: ^1.4.5
     version: 1.4.5
-  framer-motion:
-    specifier: ^11.0.28
-    version: 11.0.28(react-dom@18.2.0)(react@18.2.0)
   heic2any:
     specifier: ^0.0.4
     version: 0.0.4
@@ -35,15 +32,9 @@ dependencies:
   react-icons:
     specifier: ^5.0.1
     version: 5.0.1(react@18.2.0)
-  react-image-file-resizer:
-    specifier: ^0.4.8
-    version: 0.4.8
   sonner:
     specifier: ^1.4.41
     version: 1.4.41(react-dom@18.2.0)(react@18.2.0)
-  styled-components:
-    specifier: ^6.1.8
-    version: 6.1.8(react-dom@18.2.0)(react@18.2.0)
 
 devDependencies:
   '@types/react':
@@ -4530,10 +4521,6 @@ packages:
       react: '*'
     dependencies:
       react: 18.2.0
-    dev: false
-
-  /react-image-file-resizer@0.4.8:
-    resolution: {integrity: sha512-Ue7CfKnSlsfJ//SKzxNMz8avDgDSpWQDOnTKOp/GNRFJv4dO9L5YGHNEnj40peWkXXAK2OK0eRIoXhOYpUzUTQ==}
     dev: false
 
   /react-is@16.13.1:

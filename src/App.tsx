@@ -4,7 +4,8 @@ import { Fragment, useState } from 'react';
 import { FaGithub } from "react-icons/fa";
 import { MdDownload, MdOutlineDelete } from "react-icons/md";
 import { DropInput } from './components/DropInput';
-import { Toaster, toast } from 'sonner'
+import { Toaster, toast } from 'sonner';
+import { getFileNameWithoutExtension, withErrorHandling } from './utils';
 import heic2any from "heic2any";
 
 interface StateType {
@@ -21,78 +22,63 @@ const initialState = {
   noBgPreviewImage: null,
 };
 
-function getFileNameWithoutExtension(fileName: string): string {
-  return fileName.split('.').slice(0, -1).join('.');
-}
-
 export default function App() {
   const [isDarkMode, setDarkMode] = useState(true);
   const [state, setState] = useState<StateType>(initialState);
-
-  const resetStatus = (err: unknown) => {
-    setState(initialState);
-    console.log(err);
-
-    if (err instanceof Error) {
-      toast.error(err.message);
-    } else {
-      toast.error('Something went wrong, please try again');
-    }
-  }
   
-  const handleChangeFileInput = async (file: File) => {
+  const handleChangeFileInput = withErrorHandling(async (file: File) => {
     setState(prev => ({
       ...prev,
       isLoading: true,
-    }));
+    })); 
 
-    try {
-      let newFile: File | Blob | undefined;
+    let newFile: File | Blob | undefined;
 
-      if (file.type === 'image/heic') {
-        newFile = await heic2any({
-          blob: file,
-          toType: "image/jpeg",
-        }) as Blob;
-      } else {
-        newFile = file
-      }
+    if (file.type === 'image/heic') {
+      newFile = await heic2any({
+        blob: file,
+        toType: "image/jpeg",
+      }) as Blob;
+    } else {
+      newFile = file
+    }
 
-      imglyRemoveBackground(newFile, {
-        progress: (key, current, total) => {
-          if (key === 'compute:inference') {
-            if (current === 0) {
-              toast.info(`Processing ${current} of ${total}`);
-            } else {
-              toast.success(`Congratulations!`)
-            }
+    const blobResponse = await imglyRemoveBackground(newFile, {
+      progress: (key, current, total) => {
+        if (key === 'compute:inference') {
+          if (current === 0) {
+            toast.info(`Processing ${current} of ${total}`);
+          } else {
+            toast.success(`Congratulations!`)
           }
         }
-      }).then((blob: Blob) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(newFile as Blob);
+      }
+    });
 
-        reader.onloadend = async () => {
-          const preview = reader.result;
-          const noBgimageUrl = URL.createObjectURL(blob); 
-          const fileName = getFileNameWithoutExtension(file.name);
+    const reader = new FileReader();
+    reader.readAsDataURL(newFile as Blob);
 
-          setState((prev) => {
-            return {
-              ...prev,
-              bgPreviewImage: preview as string,
-              filename: fileName,
-              isLoading: false,
-              noBgPreviewImage: noBgimageUrl,
-            }
-          });
+    reader.onloadend = async () => {
+      const preview = reader.result;
+      const noBgimageUrl = URL.createObjectURL(blobResponse); 
+      const fileName = getFileNameWithoutExtension(file.name);
+
+      setState((prev) => {
+        return {
+          ...prev,
+          bgPreviewImage: preview as string,
+          filename: fileName,
+          isLoading: false,
+          noBgPreviewImage: noBgimageUrl,
         }
-      }).catch(resetStatus);
-
-    } catch (err) {
-      resetStatus(err);
+      });
     }
-  }
+
+    reader.onerror = () => {
+      toast('Something weird happened, please try again...');
+      setState(initialState);
+    }
+  });
 
   const handleReset = () => {
     setState(initialState);
@@ -120,9 +106,9 @@ export default function App() {
       <main className="font-body bg-white dark:bg-gray-950 min-h-screen overflow-y-hidden p-4 flex flex-col 2xl:justify-between">
         <div className="flex">
           <section className="flex-1 hidden lg:block"></section>
-          <section className="space-y-0 flex-1">
-            <h1 className="text-gray-800 dark:text-gray-400 text-[8rem] text-left lg:text-center font-body leading-none">Bgtify</h1>
-            <p className="text-gray-800 dark:text-gray-400 text-3xl text-left lg:text-center font-body">Remove the background from the image and then easily download it.</p>
+          <section className="space-y-0 lg:flex-1">
+            <h1 className="text-gray-800 dark:text-gray-400 text-[4rem] lg:text-[8rem] text-left lg:text-center font-body leading-none">Bgtify</h1>
+            <p className="text-gray-800 dark:text-gray-400 text-[1rem] lg:text-3xl text-left lg:text-center font-body">Remove the background from the image and then easily download it.</p>
           </section>
           <section className="flex-1 justify-end flex">
             <Switch active={isDarkMode} sizeClassName="focus-visible:!outline-0 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent" onChange={handleDarkMode} />
