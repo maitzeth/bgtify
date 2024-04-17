@@ -7,6 +7,7 @@ import { DropInput } from './components/DropInput';
 import { Toaster, toast } from 'sonner';
 import { getFileNameWithoutExtension, withErrorHandling } from './utils';
 import heic2any from 'heic2any';
+import { osName } from 'react-device-detect';
 
 interface StateType {
   bgPreviewImage: Maybe<string>;
@@ -27,6 +28,12 @@ export default function App() {
   const [state, setState] = useState<StateType>(initialState);
 
   const handleChangeFileInput = withErrorHandling(async (file: File) => {
+    const invalidOS = ['android', 'ios'];
+
+    if (invalidOS.includes(osName.toLowerCase())) {
+      throw Error('Sorry, this app is not supported on your device');
+    }
+
     setState((prev) => ({
       ...prev,
       isLoading: true,
