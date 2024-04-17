@@ -11,6 +11,9 @@ dependencies:
   framer-motion:
     specifier: ^11.0.28
     version: 11.0.28(react-dom@18.2.0)(react@18.2.0)
+  heic2any:
+    specifier: ^0.0.4
+    version: 0.0.4
   maitzeth-ui:
     specifier: ^0.4.0
     version: 0.4.0(@types/node@20.3.3)(classnames@2.5.1)(framer-motion@11.0.28)(react@18.2.0)(styled-components@6.1.8)(tailwind-merge@2.2.2)(typescript@5.4.5)
@@ -3113,6 +3116,10 @@ packages:
     engines: {node: '>= 0.4'}
     dependencies:
       function-bind: 1.1.2
+
+  /heic2any@0.0.4:
+    resolution: {integrity: sha512-3lLnZiDELfabVH87htnRolZ2iehX9zwpRyGNz22GKXIu0fznlblf0/ftppXKNqS26dqFSeqfIBhAmAj/uSp0cA==}
+    dev: false
 
   /hosted-git-info@7.0.1:
     resolution: {integrity: sha512-+K84LB1DYwMHoHSgaOY/Jfhw3ucPmSET5v98Ke/HdNSw4a0UktWzyW1mjhjpuxxTqOOsfWT/7iVshHmVZ4IpOA==}

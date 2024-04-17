@@ -18,10 +18,6 @@ export function DropInput({ onChange }: Props) {
   const {getRootProps, getInputProps, isDragActive} = useDropzone({
     onDrop,
     maxFiles: 1,
-    accept: {
-      'image/jpeg': [],
-      'image/png': []
-    },
     multiple: false,
   });
 

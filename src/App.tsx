@@ -4,8 +4,8 @@ import { Fragment, useState } from 'react';
 import { FaGithub } from "react-icons/fa";
 import { MdDownload, MdOutlineDelete } from "react-icons/md";
 import { DropInput } from './components/DropInput';
-import Resizer from "react-image-file-resizer";
 import { Toaster, toast } from 'sonner'
+import heic2any from "heic2any";
 
 interface StateType {
   bgPreviewImage: Maybe<string>;
@@ -21,23 +21,6 @@ const initialState = {
   noBgPreviewImage: null,
 };
 
-const resizeFile = (file: File) => {
-  return new Promise((resolve) => {
-    return Resizer.imageFileResizer(
-      file,
-      1000,
-      1000,
-      "jpeg",
-      80,
-      0,
-      (uri) => {
-        resolve(uri);
-      },
-      'file'
-    );
-  }) as unknown as Promise<File>;
-};
-
 function getFileNameWithoutExtension(fileName: string): string {
   return fileName.split('.').slice(0, -1).join('.');
 }
@@ -45,6 +28,17 @@ function getFileNameWithoutExtension(fileName: string): string {
 export default function App() {
   const [isDarkMode, setDarkMode] = useState(true);
   const [state, setState] = useState<StateType>(initialState);
+
+  const resetStatus = (err: unknown) => {
+    setState(initialState);
+    console.log(err);
+
+    if (err instanceof Error) {
+      toast.error(err.message);
+    } else {
+      toast.error('Something went wrong, please try again');
+    }
+  }
   
   const handleChangeFileInput = async (file: File) => {
     setState(prev => ({
@@ -52,46 +46,52 @@ export default function App() {
       isLoading: true,
     }));
 
-    const resizedFile = await resizeFile(file);
+    try {
+      let newFile: File | Blob | undefined;
 
-    imglyRemoveBackground(resizedFile, {
-      progress: (key, current, total) => {
-        if (key === 'compute:inference') {
-          if (current === 0) {
-            toast.info(`Processing ${current} of ${total}`);
-          } else {
-            toast.success(`Congratulations!`)
+      if (file.type === 'image/heic') {
+        newFile = await heic2any({
+          blob: file,
+          toType: "image/jpeg",
+        }) as Blob;
+      } else {
+        newFile = file
+      }
+
+      imglyRemoveBackground(newFile, {
+        progress: (key, current, total) => {
+          if (key === 'compute:inference') {
+            if (current === 0) {
+              toast.info(`Processing ${current} of ${total}`);
+            } else {
+              toast.success(`Congratulations!`)
+            }
           }
         }
-      }
-    }).then((blob: Blob) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(resizedFile);
+      }).then((blob: Blob) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(newFile as Blob);
 
-      reader.onloadend = async () => {
-        const preview = reader.result;
-        const noBgimageUrl = URL.createObjectURL(blob); 
-        const fileName = getFileNameWithoutExtension(file.name);
+        reader.onloadend = async () => {
+          const preview = reader.result;
+          const noBgimageUrl = URL.createObjectURL(blob); 
+          const fileName = getFileNameWithoutExtension(file.name);
 
-        setState((prev) => {
-          return {
-            ...prev,
-            bgPreviewImage: preview as string,
-            filename: fileName,
-            isLoading: false,
-            noBgPreviewImage: noBgimageUrl,
-          }
-        });
-      }
-    }).catch((err) => {
-      setState(initialState);
+          setState((prev) => {
+            return {
+              ...prev,
+              bgPreviewImage: preview as string,
+              filename: fileName,
+              isLoading: false,
+              noBgPreviewImage: noBgimageUrl,
+            }
+          });
+        }
+      }).catch(resetStatus);
 
-      if (err instanceof Error) {
-        toast.error(err.message);
-      } else {
-        toast.error('Something went wrong, please try again');
-      }
-    });
+    } catch (err) {
+      resetStatus(err);
+    }
   }
 
   const handleReset = () => {
@@ -125,7 +125,6 @@ export default function App() {
             <p className="text-gray-800 dark:text-gray-400 text-3xl text-left lg:text-center font-body">Remove the background from the image and then easily download it.</p>
           </section>
           <section className="flex-1 justify-end flex">
-          {/*    */}
             <Switch active={isDarkMode} sizeClassName="focus-visible:!outline-0 focus-visible:ring-2 focus-visible:ring-offset-1 focus-visible:ring-offset-transparent" onChange={handleDarkMode} />
           </section>
         </div>
@@ -166,7 +165,7 @@ export default function App() {
         <footer className="lg:flex flex-row justify-between text-2xl text-gray-800 dark:text-gray-400 select-none mt-auto lg:mt-auto 2xl:mt-10 space-y-2 lg:space-y-0">
           <p className="min-w-[120px]"><a href="https://github.com/maitzeth" className="hover:underline">maitzeth</a> / <a href="https://andreivan.me/" className="hover:underline">andre ivan</a></p>
           <p className="min-w-[120px]">Powered by <a href="https://img.ly/showcases/cesdk/background-removal/web" target="_blank" rel="nofollow noopener" className="hover:underline">@imgly</a></p>
-          <p className="min-w-[120px]"><a href="https://andreivan.me/" target="_blank" rel="nofollow noopener"><FaGithub size={24} className="lg:ml-auto" /></a></p>
+          <p className="min-w-[120px]"><a href="https://github.com/maitzeth/bgtify" target="_blank" rel="nofollow noopener"><FaGithub size={24} className="lg:ml-auto" /></a></p>
         </footer>
       </main>
     </>

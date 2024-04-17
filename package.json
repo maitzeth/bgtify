@@ -12,6 +12,7 @@
   "dependencies": {
     "@imgly/background-removal": "^1.4.5",
     "framer-motion": "^11.0.28",
+    "heic2any": "^0.0.4",
     "maitzeth-ui": "^0.4.0",
     "normalize.css": "^8.0.1",
     "react": "^18.2.0",
