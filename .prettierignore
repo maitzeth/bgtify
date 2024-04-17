@@ -1,0 +1,8 @@
+.github
+.graphqlrc.yml
+.storybook
+.vscode
+.idea/
+node_modules
+coverage
+dist
